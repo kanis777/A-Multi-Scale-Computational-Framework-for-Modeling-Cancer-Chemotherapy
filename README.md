@@ -1,1 +1,142 @@
-``A Multi-Scale Computational Framework for Modeling Cancer ChemotherapyThis repository contains the Python code for a research project that models the dynamic battle between the immune system, cancer cells, and chemotherapy.The project's goal is to build a more realistic cancer simulation. It starts with a simple, standard mathematical model (from a 2019 paper by Lestari et al. 1) and builds on it in two major steps, creating a final model that is far more biologically accurate.The Research Ideology: A Three-Model ProgressionOur research is built on the idea that simple models have critical limitations. Real-world cancer is not just an "average" calculation; it's a complex, random, and spatial battle. We built three models to capture this progression.Model 1: The Baseline ("The Calculator")Concept: This is the starting point, based on the Lestari et al. (2019) paper.1 It treats the three populations—Immune Cells ($E$), Tumor Cells ($T$), and Chemotherapy ($M$)—as big, perfectly mixed "pots" of liquid.1How it Works: It uses standard equations (ODEs) to calculate the "average" outcome. If you run the simulation 100 times, you get the exact same result every time.1Limitation: This model is not random and has no concept of space. It can't tell the difference between a solid, lumpy tumor and tumor cells dissolved in a liquid.1Model 2: The Stochastic Model ("The Forecast")Concept: This model fixes the first problem by adding randomness (stochasticity).How it Works: We converted the "calculator" into a "forecast." At every tiny time step, the model "rolls the dice" (a Wiener Process) to simulate the random "bumps" and "jolts" of real biology.1What it Gives Us: Instead of one single answer, you can run it 1,000 times and get a distribution of possible futures. This allows us to ask a much better question: "What is the probability this treatment will work?".1Limitation: It still treats the tumor as one big, well-mixed "pot."Model 3: The Network-Hybrid Model ("The Battle Simulator")Concept: This is our most advanced model. It fixes the second problem by adding spatial structure.1How it Works: This is a true "battle simulator." The tumor is no longer a single "pot" but a network of individual "agents," or cells. We use the networkx library to build a graph that represents the physical structure of a solid tumor.1New, Smarter Rules: Because we now have space, we can apply more realistic rules:Immune Attack (Surface vs. Core): Immune cells can't attack the whole tumor at once. They can only attack the cells on the surface (nodes with low network connections). Cells deep in the "core" of the tumor network are shielded from the attack.1Chemo Penetration (Gradient): Chemotherapy isn't perfectly distributed. It starts from a "blood vessel" (a source_node) and gets weaker as it tries to seep into the dense tumor core (based on shortest_path_length).1Tumor Growth (Agent-Based): The tumor grows when individual "agent" cells divide and add new nodes to the network, making the tumor physically larger.1Explanation of Python Filesorig.pyModel: 1 (The Baseline) 1What it does: Implements the original, simple deterministic model from the Lestari et al. paper.1 It uses standard scipy libraries to get a single, "average" result.1ver1_withsde.py / ver1_withsde2.pyModel: 2 (The Stochastic Model) 1What it does: Implements the "forecast" model. It defines the drift (average path) and diffusion (randomness) functions.1 It includes a custom sde_solver that "rolls the dice" at every time step (the Euler-Maruyama method) to simulate biological noise.1ver2_ns.py / ver2_ns2.pyModel: 3 (The Network-Hybrid Model) 1What it does: Implements the "battle simulator." It uses networkx to build the tumor as a spatial graph of individual cell agents.1 This file contains all the advanced spatial logic, including the "Surface vs. Core" attack, the chemo penetration gradient, and agent-based tumor growth.1Key FindingThe power of this multi-scale approach is revealed in the simulation results (see NS_PACKAGE_slide.pdf).1In Scenario 1 (low tumor growth, low chemo):Model 1 (ODE) and Model 2 (SDE) both predict the therapy is a complete success and the tumor is eliminated.1Model 3 (The Network-Hybrid), using the exact same parameters, shows the tumor survives.1Why the Difference?Spatial protection. In the Network-Hybrid model, the immune system ($E$) can only kill the "surface cells." The tumor's "core" is spatially shielded from the attack.1 This core allows the tumor to persist. This demonstrates a realistic form of treatment resistance that the simpler models are completely blind to.Main ReferenceLestari, D., Sari, E. R., & Arifah, H. (2019). Dynamics of a mathematical model of cancer cells with chemotherapy. Journal of Physics: Conference Series, 1320, 012026.`
+# 🧬 A Multi-Scale Computational Framework for Modeling Cancer Chemotherapy
+
+This repository contains the **Python code** for a research project that models the dynamic battle between the **immune system**, **cancer cells**, and **chemotherapy**.  
+
+The project's goal is to build a more realistic cancer simulation. It starts with a simple, standard mathematical model (from a 2019 paper by *Lestari et al.*) and builds on it in two major steps—creating a final model that is far more **biologically accurate**.
+
+---
+
+## 🎯 Research Ideology: A Three-Model Progression
+
+Our research is built on the idea that **simple models have critical limitations**.  
+Real-world cancer is not just an "average" calculation—it's a **complex, random, and spatial battle**.
+
+We developed **three models** to capture this progression:
+
+---
+
+### 🔹 Model 1: The Baseline — *"The Calculator"*
+
+**Concept:**  
+This is the starting point, based on *Lestari et al. (2019)*. It treats the three populations —  
+- Immune Cells (**E**)  
+- Tumor Cells (**T**)  
+- Chemotherapy (**M**)  
+as large, perfectly mixed “pots” of liquid.
+
+**How it Works:**  
+- Uses standard **ordinary differential equations (ODEs)** to calculate the average outcome.  
+- Running the simulation 100 times produces the **exact same result** each time.
+
+**Limitation:**  
+- Not random (deterministic).  
+- Has **no spatial awareness** — cannot distinguish between a solid tumor and a well-mixed cell suspension.
+
+---
+
+### 🔹 Model 2: The Stochastic Model — *"The Forecast"*
+
+**Concept:**  
+This model introduces **biological randomness (stochasticity)**.
+
+**How it Works:**  
+- Converts the “calculator” into a **forecast** using a **Wiener Process**.  
+- At every small time step, the model “rolls the dice” to simulate random biological variations.  
+- Implemented using the **Euler-Maruyama method**.
+
+**What it Gives Us:**  
+- Produces a **distribution of possible futures** rather than a single outcome.  
+- Allows researchers to ask questions like:  
+  > “What is the probability this treatment will work?”
+
+**Limitation:**  
+- Still assumes a single, well-mixed tumor — **no spatial structure**.
+
+---
+
+### 🔹 Model 3: The Network-Hybrid Model — *"The Battle Simulator"*
+
+**Concept:**  
+The most advanced model, adding **spatial structure** to the simulation.
+
+**How it Works:**  
+- Uses **NetworkX** to represent the tumor as a **graph** of interconnected cell agents.  
+- Each node represents a tumor cell; edges represent physical proximity or communication.
+
+**New, Smarter Biological Rules:**
+
+- **Immune Attack (Surface vs. Core):**  
+  Immune cells can only attack the **surface cells** (nodes with fewer connections).  
+  Core cells are shielded from direct attack.
+
+- **Chemo Penetration (Gradient):**  
+  Chemotherapy originates from a **source node** (representing a blood vessel) and weakens with **distance** (via shortest path length).
+
+- **Tumor Growth (Agent-Based):**  
+  Tumor cells divide and add **new nodes** to the network, simulating physical tumor expansion.
+
+---
+
+## 📁 Python Files Overview
+
+| File | Model | Description |
+|------|--------|-------------|
+| **`orig.py`** | Model 1 | Implements the baseline deterministic model from Lestari et al. (2019). Uses SciPy to solve ODEs for a single "average" result. |
+| **`ver2_sde.py`** | Model 2 | Implements the stochastic "forecast" model. Defines drift and diffusion functions and includes a custom SDE solver using the Euler-Maruyama method. |
+| **`ver3_hybrid.py`** | Model 3 | Implements the advanced Network-Hybrid model ("battle simulator") with spatial logic, immune attack surface mechanics, chemo gradients, and agent-based tumor growth. |
+
+---
+
+## 🔍 Key Finding
+
+The **power of this multi-scale approach** is revealed in simulation results (see `NS_PACKAGE_slide.pdf`).
+
+### 🧪 Scenario 1: Low Tumor Growth, Low Chemo
+| Model | Prediction | Outcome |
+|--------|-------------|----------|
+| **Model 1 (ODE)** | Tumor eliminated | ❌ Unrealistic |
+| **Model 2 (SDE)** | Tumor eliminated | ❌ Unrealistic |
+| **Model 3 (Network-Hybrid)** | Tumor survives | ✅ Realistic |
+
+**Why the Difference?**  
+> **Spatial protection.**  
+> In the Network-Hybrid model, immune cells can only kill the **surface** tumor cells.  
+> The **core** is shielded — allowing the tumor to persist.  
+> This reproduces realistic **treatment resistance**, which simpler models cannot capture.
+
+---
+
+## 📚 Reference
+
+> Lestari, D., Sari, E. R., & Arifah, H. (2019).  
+> *Dynamics of a mathematical model of cancer cells with chemotherapy.*  
+> *Journal of Physics: Conference Series, 1320, 012026.*
+
+---
+
+## ⚙️ Requirements
+
+- Python ≥ 3.8  
+- `numpy`  
+- `scipy`  
+- `networkx`  
+- `matplotlib`  
+
+---
+
+## 🚀 How to Run
+
+```bash
+# Clone the repository
+git clone https://github.com/kanis777/A-Multi-Scale-Computational-Framework-for-Modeling-Cancer-Chemotherapy.git
+
+# Run the baseline model
+python orig.py
+
+# Run the stochastic model
+python ver2_sde.py
+
+# Run the network-hybrid model
+python ver3_hybrid.py
+
+or run the .ipynb file
